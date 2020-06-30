@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+
+ <style type = "text/css"> 
+		.container{ 
+            height: 710px;
+			width: 630px;
+			position: relative;  
+			margin: auto;
+         } 
+		.menuFrame{ 
+            height: 710px;
+			width: 630px;
+			position: relative;  
+			cursor: url(graphics/point.png), auto;
+			background-color: #888;
+			background:url(graphics/back.png) no-repeat;
+			background-size: contain;
+			z-index: -1;
+         } 
+		 .UIButton{ 
+            height: 50px;
+			width: 50px;
+			position: absolute; 
+			background-color: red;
+			z-index: 1;
+         }
+		 .UIDisplay{ 
+            height: 40px;
+			width: 200px;
+			font-family: LCD;
+			font-size: 25;
+			color: #F3FFF4;
+			text-align: center;
+			text-margin: auto;
+			position: absolute; 
+			background-color: #006F00;
+			z-index: 1;
+         }
+		 @font-face {
+			font-family: LCD;
+			src: url(fonts/LCD.TTF);
+		}
+		 @font-face {
+			font-family: Imperial;
+			src: url(fonts/Imperial.otf);
+		}
+		  .yellow{      
+			background-color: yellow;
+         } 
+      </style> 
+
+<script src="scripts\functions.js">
+</script>
+<script src="scripts\objects.js">
+</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+
+
+////////////////Sceny
+	
+</script>
+</head>
+<body>
+<div id = "container" class = "container"">
+<div id = "canvas" style="position: absolute; ">
+<canvas id="CanvasUI" width="600" height="600" 
+   style="position: absolute; left: 0; top: 0; z-index: 2; cursor: url(graphics/point.png), auto;">Your browser does not support the canvas element.</canvas>
+ <canvas id="Canvas1" width="600" height="600" 
+   style="position: absolute; left: 0; top: 0; z-index: 1;">Your browser does not support the canvas element.</canvas>
+ <canvas id="CanvasBack" width="600" height="600" 
+   style="position: absolute; left: 0; top: 0; z-index: 0;">Your browser does not support the canvas element.</canvas>
+</div>
+<div id = "gameWindow" class = "menuFrame" >We're not in Kansas anymore</div>
+<div id = "wbutton" class = "UIButton" style= "left: 20px; top: 620px;background:url(graphics/walk.png) no-repeat;"></div>
+<div id = "gbutton" class = "UIButton"  style= "left: 100px; top: 620px; background:url(graphics/shoot.png) no-repeat;"></div>
+<div id = "bbutton" class = "UIButton" style= "left: 180px; top: 620px; background:url(graphics/bribe.png) no-repeat;"></div>
+<div id = "tbutton" class = "UIButton" style= "left: 260px; top: 620px; background:url(graphics/trap.png) no-repeat;"></div>
+<div id = "InfoDis" class = "UIDisplay" style= "left: 380px; top: 620px;">loading...</div>
+</div>
+<script> 
+var global = this;
+var g_music = 0;
+var currentScene;
+var Time = 0;
+var timeActive = true; 
+var HalfPI = Math.PI/2;
+SoundPlay = new sound(["sounds/pistol.wav","sounds/pickup.wav","sounds/Transition_dirt.wav","sounds/trap.wav","sounds/lose.wav","sounds/dropGold.wav"])
+
+//ImageDepository = [];
+//ImageDepository[1] = new Image;
+//ImageDepository.src = "graphics/tile1.jpg";
+sceneDepository = [];
+
+window.addEventListener('load', function () {
+ctx = document.getElementById("Canvas1").getContext('2d');
+ctxB = document.getElementById("CanvasBack").getContext('2d');
+ctxUI = document.getElementById("CanvasUI").getContext('2d');
+//Player1 = new Player('pHolder.jpg',100, 400, 15, 25);	
+//Player1 = new Player('graphics/plateruno.png',520,450, 32, 32);
+Player1 = new Player('graphics/selfspriting2.png', 520, 450, 32, 32);
+//sceneDepository = [];
+Level1 = new Scena('graphics/level1.png',ctx, Player1);	
+Level1.createTiles(ctx);
+sceneDepository[0] = Level1;
+Level2 = new Scena2('graphics/paper.jpg',ctx, Player1);	
+Level2.createTiles(ctx);
+sceneDepository[1] = Level2;
+LevelT = new Scena3('graphics/TutorialBack1.jpg',ctx, Player1);	
+LevelT.createTiles(ctx);
+sceneDepository[3] = LevelT;
+GM = new Gameover('graphics/GameOver.png',ctx, Player1, 5);	
+sceneDepository[6] = GM;
+WinState = new Gameover('graphics/GameWin.png',ctx, Player1, 5);	
+sceneDepository[7] = WinState;
+MenU = new Gameover('graphics/MAIN.jpg',ctx, Player1, 3);	
+sceneDepository[5] = MenU;
+Zegar1 = new Zegar();
+currentScene = sceneDepository[5]; // choose first level
+//currentScene.objects.push(Player1);
+Level1.img.addEventListener('load', function () {
+currentScene.draw(ctxB,Player1);
+ var interval = setInterval(function() {
+	return function () {
+ currentScene.update(ctx);
+};
+    }(), 100);
+var interval2 = setInterval(function() {
+	return function () {
+ ctxUI.clearRect(0, 0, ctxUI.canvas.width, ctxUI.canvas.height);
+ Zegar1.draw(ctxUI);  //3
+ //if(Player1.status < 2){
+ $("#InfoDis").text(Player1.equipment.draw(Player1.status));
+ //}
+ //if(timeActive == true){
+ //time++;
+ Zegar1.update();
+ //}
+};
+    }(), 1000);
+  }, false);
+}, false);
+
+
+document.getElementById("CanvasUI").addEventListener("click",function(event)
+{
+var rect = document.getElementById("CanvasUI").getBoundingClientRect()
+if(currentScene == sceneDepository[5]){
+currentScene.warper.warp(Player1);
+}
+else if(currentScene == sceneDepository[6]){
+location.reload(); 
+}
+else if(currentScene == sceneDepository[7]){
+location.reload(); 
+}
+else{
+if(Player1.status == 1){
+cx = event.pageX - rect.left;
+cy = event.pageY- rect.top;
+Player1.dx=cx;
+Player1.dy=cy;
+Player1.mark.plant(cx,cy);
+Player1.currentAnchor=0;
+}
+if(Player1.status == 2){
+cx = event.pageX - rect.left;
+cy = event.pageY- rect.top;
+Player1.attack(cx,cy);
+}
+if(Player1.status == 3){
+cx = event.pageX - rect.left;
+cy = event.pageY- rect.top;
+Player1.drop(cx,cy,3);
+}
+if(Player1.status == 4){
+cx = event.pageX - rect.left;
+cy = event.pageY- rect.top;
+Player1.drop(cx,cy,4);
+}
+//console.log(Player1.dx+"x"+Player1.dy);
+//console.log(Player1.x+"xx"+Player1.y);
+timeActive = true;
+//console.log(cx+"x"+cy);
+}
+}
+,false);
+/*
+document.addEventListener("keydown",function(event)
+{
+if (event.code == 'KeyA') {
+console.log("A");
+if(Player1.status == 1){
+console.log("strzelasz");
+Player1.status = 2;
+}
+else if(Player1.status == 2){
+console.log("chodzisz");
+Player1.status = 1;
+}
+}}
+,false);
+*/
+////UI
+
+$(".UIButton").hover(function() {
+$(".UIButton").css("cursor","url(graphics/point.png),auto");
+}
+)
+$("#wbutton").click(function() {
+ if(Player1.status !=1){
+$("#InfoDis").text('Move');
+$(".UIButton").css("opacity", "1");
+$("#CanvasUI").css("cursor",  "url(graphics/point.png),auto");
+$(this).css("opacity", "0.5");
+Player1.status = 1;
+}
+})
+$("#wbutton").hover(function() {
+$("#InfoDis").text('Move');
+})
+$("#gbutton").click(function() {
+ if(Player1.status !=2){
+console.log("strzelasz");
+$(".UIButton").css("opacity", "1");
+$("#CanvasUI").css("cursor", "url(graphics/cross.png),auto")
+$(this).css("opacity", "0.5");
+Player1.status = 2;
+}
+})
+$("#gbutton").hover(function() {
+$("#InfoDis").text('Rifle');
+})
+$("#bbutton").click(function() {
+console.log("bribe");
+$(".UIButton").css("opacity", "1");
+$(this).css("opacity", "0.5");
+Player1.status = 3;
+$("#InfoDis").text('Bribe');
+})
+$("#bbutton").hover(function() {
+$("#InfoDis").text('Bribe');
+})
+$("#tbutton").click(function() {
+console.log("bribe");
+$(".UIButton").css("opacity", "1");
+$(this).css("opacity", "0.5");
+Player1.status = 4;
+$("#InfoDis").text('Trap');
+})
+$("#tbutton").hover(function() {
+$("#InfoDis").text('Trap');
+})
+
+</script>
+</body>
+</html>
+
+
